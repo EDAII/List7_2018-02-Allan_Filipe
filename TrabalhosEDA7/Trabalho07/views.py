@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from datetime import datetime
-import time
+# from datetime import datetime
+# import time
 
 # Coins list used in coin changing greed algorithm
 coins_list = [1, 5, 10, 25, 50, 100]
@@ -27,6 +27,7 @@ def home(request):
                 weights_list.append(weight)
 
             result, table = knapSack(limit, weights, values, values_quantit)
+            items = getItems(table, limit, values_quantit, weights, values)
 
             return render(request, 'result.html', {'algorithm': request.POST['selectedOption'],
                                                    'columns_descriptions': columns_descriptions,
@@ -35,6 +36,7 @@ def home(request):
                                                    'limit': limit,
                                                    'result': result,
                                                    'table': table,
+                                                   'items':items,
                                                    'data': data})
         '''
         elif request.POST['selectedOption'] == "Greed - Interval Scheduling":
@@ -62,6 +64,7 @@ def home(request):
 
     return render(request, 'home.html')
 
+
 def read_csv_knapsack(file):
     values = []
     weights = []
@@ -81,18 +84,35 @@ def read_csv_knapsack(file):
 
     return columns_descriptions, values, weights, limit[0]
 
+
+def getItems(values_table, weight_limit, values_quantit, weights, values):
+    result = values_table[values_quantit][weight_limit]
+    items = []
+
+    for number in range(values_quantit, 0, -1):
+        if result <= 0:
+            break
+        if result == values_table[number - 1][weight_limit]:
+            continue
+        else:
+            items.append(weights[number - 1])
+
+            result = result - values[number - 1]
+            weight_limit = weight_limit - weights[number - 1]
+
+    return items
+
+
 def knapSack(weight_limit, weights, values, values_quantit): 
-	values_table = [[0 for x in range(weight_limit+1)] for x in range(values_quantit+1)] 
- 
-	for item in range(values_quantit+1): 
-		for weight in range(weight_limit+1): 
-			if item==0 or weight==0: 
-				values_table[item][weight] = 0
-			elif weights[item-1] <= weight: 
-				values_table[item][weight] = max(values[item-1] + values_table[item-1][weight-weights[item-1]], values_table[item-1][weight]) 
-			else: 
-				values_table[item][weight] = values_table[item-1][weight] 
+    values_table = [[0 for x in range(weight_limit+1)] for x in range(values_quantit+1)] 
 
-	return values_table[values_quantit][weight_limit], values_table 
+    for item in range(values_quantit+1): 
+        for weight in range(weight_limit+1): 
+            if item == 0 or weight == 0: 
+                values_table[item][weight] = 0
+            elif weights[item-1] <= weight: 
+                values_table[item][weight] = max(values[item-1] + values_table[item-1][weight-weights[item-1]], values_table[item-1][weight]) 
+            else: 
+                values_table[item][weight] = values_table[item-1][weight] 
 
-
+    return values_table[values_quantit][weight_limit], values_table 
