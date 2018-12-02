@@ -22,6 +22,8 @@ def home(request):
             result, table = knapSack(limit, weights, values, len(values))
             time_final = time.time() - time_initial
 
+            table = put_itens_on_table(table)
+
             return render(request, 'result.html', {'algorithm': request.POST['selectedOption'],
                                                    'weights_list': weights_list,
                                                    'limit': limit,
@@ -48,6 +50,20 @@ def home(request):
     return render(request, 'home.html')
 
 
+def put_itens_on_table(table):
+    new_table = list(table)
+    current_string = "{} {}"
+
+    for i in range(0, len(table)):
+        new_table[i].insert(0, current_string.format("{", "}"))
+        if i == 0:
+            current_string = "{}" + current_string.format("", "") + str(i + 1) + " " + "{}"
+        else:
+            current_string = "{}" + current_string.format("", "") + "; " + str(i + 1) + " " + "{}"
+
+    return new_table
+
+
 def create_weight_list(limit):
     weights_list = []
 
@@ -62,7 +78,7 @@ def create_item_weight_table(values, weights):
 
     data = []
     for number in range(0, values_quantit):
-        data.append([values[number], weights[number]])
+        data.append([number + 1, values[number], weights[number]])
 
     return data
 
