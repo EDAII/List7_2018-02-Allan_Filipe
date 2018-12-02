@@ -31,15 +31,26 @@ def home(request):
                                                    'limit': limit,
                                                    'result': result,
                                                    'table': table,
-                                                   'items':items,
+                                                   'items': items,
                                                    'time_final': time_final,
                                                    'item_weight_table': item_weight_table})
 
         elif request.POST['selectedOption'] == "Maior Subsequência Crescente":
             columns_descriptions, all_data = read_csv(text_obj.splitlines())
 
+            time_initial = time.time()
+            longest_value, resolution_list = longest_increasing_subsequence(all_data)
+            time_final = time.time() - time_initial
+
+            dataset_with_list, id_list = put_resolution_list_on_dataset(all_data, resolution_list)
+
             return render(request, 'result.html', {'algorithm': request.POST['selectedOption'],
                                                    'columns_descriptions': columns_descriptions,
+                                                   'longest_value': longest_value,
+                                                   'time_final': time_final,
+                                                   'id_list': id_list,
+                                                   'resolution_list': resolution_list,
+                                                   'dataset_with_list': dataset_with_list,
                                                    'all_data': all_data})
 
         else:
@@ -124,19 +135,20 @@ def getItems(values_table, weight_limit, values_quantit, weights, values):
     return items
 
 
-def knapSack(weight_limit, weights, values, values_quantit): 
-    values_table = [[0 for x in range(weight_limit+1)] for x in range(values_quantit+1)] 
+def knapSack(weight_limit, weights, values, values_quantit):
+    values_table = [[0 for x in range(weight_limit + 1)] for x in range(values_quantit + 1)]
 
-    for item in range(values_quantit+1): 
-        for weight in range(weight_limit+1): 
-            if item == 0 or weight == 0: 
+    for item in range(values_quantit + 1):
+        for weight in range(weight_limit + 1):
+            if item == 0 or weight == 0:
                 values_table[item][weight] = 0
-            elif weights[item-1] <= weight: 
-                values_table[item][weight] = max(values[item-1] + values_table[item-1][weight-weights[item-1]], values_table[item-1][weight]) 
-            else: 
-                values_table[item][weight] = values_table[item-1][weight] 
+            elif weights[item - 1] <= weight:
+                values_table[item][weight] = max(values[item - 1] + values_table[item - 1][weight - weights[item - 1]], values_table[item - 1][weight])
+            else:
+                values_table[item][weight] = values_table[item - 1][weight]
 
-    return values_table[values_quantit][weight_limit], values_table 
+    return values_table[values_quantit][weight_limit], values_table
+
 
 def read_csv(file):
     all_data = []
@@ -153,3 +165,29 @@ def read_csv(file):
             all_data.append(line_splitted)
 
     return columns_descriptions, all_data
+
+
+def longest_increasing_subsequence(receive_data):
+    dataset = list(receive_data)
+    resolution_list = [1 for _ in range(len(dataset))]
+
+    for i in range(len(dataset)):
+        for j in range(i):
+            if int(dataset[j][0]) <= int(dataset[i][0]):
+                resolution_list[i] = max(resolution_list[i], resolution_list[j] + 1)
+
+    return max(resolution_list), resolution_list
+
+
+def put_resolution_list_on_dataset(dataset, resolution_list):
+    new_dataset = [[], []]
+    id_list = []
+
+    for i in range(0, len(dataset)):
+        id_list.append(dataset[i][0])
+        new_dataset[0].append(dataset[i][0])
+
+    for i in range(0, len(resolution_list)):
+        new_dataset[1].append(resolution_list[i])
+
+    return new_dataset, id_list

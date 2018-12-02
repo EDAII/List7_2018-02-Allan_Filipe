@@ -55,3 +55,9 @@ html,
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+.horizontal {
+    width: auto;
+    overflow-x: auto;
+    white-space: nowrap;
+}
